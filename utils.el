@@ -1,4 +1,4 @@
-;;; hackatime-utils.el --- Utility functions for HackaTime Extension -*- lexical-binding: t; -*-
+;;; utils.el --- Utility functions for HackaTime Extension -*- lexical-binding: t; -*-
 
 (defun hackatime-get-lines ()
   (if (buffer-live-p (current-buffer))
@@ -88,28 +88,6 @@
         (+ 1 (string-to-number (car submodules))))
     1))
 
-(defun hackatime-get-line-additions ()
-  (if-let ((root (vc-root-dir))
-           (file (buffer-file-name)))
-      (let* ((cmd (format "git -C %s diff --numstat -- %s" root file))
-             (output (shell-command-to-string cmd))
-             (fields (and output (split-string output))))
-        (if (and fields (>= (length fields) 2))
-            (string-to-number (nth 0 fields))
-          0))
-    0))
-
-(defun hackatime-get-line-deletions ()
-  (if-let ((root (vc-root-dir))
-           (file (buffer-file-name)))
-      (let* ((cmd (format "git -C %s diff --numstat -- %s" root file))
-             (output (shell-command-to-string cmd))
-             (fields (and output (split-string output))))
-        (if (and fields (>= (length fields) 2))
-            (string-to-number (nth 1 fields))
-          0))
-    0))
-
 (defun hackatime-get-is-write ()
   (if (and (buffer-live-p (current-buffer)) (buffer-modified-p))
       t
@@ -141,4 +119,4 @@
           branch))
     hackatime-default-branch))
 
-(provide 'hackatime-utils)
+(provide 'utils)

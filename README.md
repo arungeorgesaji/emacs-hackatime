@@ -6,7 +6,9 @@ Emacs integration for HackaTime productivity tracking.
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/arungeorgesaji/emacs-hackatime.git ~/.emacs.d/lisp/
+   git clone https://github.com/arungeorgesaji/emacs-hackatime.git 
+   mv emacs-hackatime/utils.el ~/.emacs.d/lisp/
+   mv emacs-hackatime/client.el ~/.emacs.d/lisp/
    ```
 
 2. **Add to your `init.el`:**

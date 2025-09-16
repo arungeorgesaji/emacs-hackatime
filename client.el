@@ -12,7 +12,7 @@
 (defgroup hackatime nil
   "Customization group for HackaTime tracking in Emacs.")
 
-(defcustom hackatime-debug-mode nil
+(defcustom hackatime-debug-mode t  ; Changed to t for debugging
   "Display debug messages for HackaTime tracking."
   :type 'boolean
   :group 'hackatime)
@@ -73,7 +73,8 @@
                        (length hackatime-heartbeats))))
 
 (defun hackatime-create-heartbeat ()
-  (let ((lines (hackatime-get-lines))
+  (let* ((lines (hackatime-get-lines))
+        (line-changes (hackatime-save-current-state))  ; This also creates the cache
         (cursor (hackatime-get-cursor-pos))
         (machine-id (hackatime-get-machine-id))
         (timestamp (hackatime-get-time))
@@ -81,19 +82,19 @@
         (entity (hackatime-get-entity))
         (language (hackatime-get-language))
         (type (hackatime-get-type))
+        (line_deletions (if line-changes (cdr line-changes) 0))
         (is-write (hackatime-get-is-write))
         (project (hackatime-get-project))
         (project-root-count (hackatime-get-project-root-count))
+        (line_additions (if line-changes (car line-changes) 0))
         (os (hackatime-get-operating-system))
         (lineno (hackatime-get-lineno))
         (branch (hackatime-get-branch))
         (editor (hackatime-get-editor))
         (user-agent (hackatime-get-user-agent)))
     
-    (hackatime-message "Heartbeat data: lines=%s cursor=%s machine=%s time=%s category=%s entity=%s lang=%s type=%s write=%s project=%s roots=%s os=%s line=%s branch=%s editor=%s agent=%s"
-                       lines cursor machine-id timestamp category entity language type 
-                       is-write project project-root-count 
-                       os lineno branch editor user-agent)
+    (hackatime-message "Heartbeat data: lines=%s cursor=%s machine=%s time=%s category=%s entity=%s lang=%s type=%s line_deletions=%s write=%s project=%s roots=%s line_additions=%s os=%s line=%s branch=%s editor=%s agent=%s" 
+                       lines cursor machine-id timestamp category entity language type line_deletions is-write project project-root-count line_additions os lineno branch editor user-agent)
     
     `(("lines" . ,lines)
       ("cursorpos" . ,cursor)
@@ -103,9 +104,11 @@
       ("entity" . ,entity)
       ("language" . ,language)
       ("type" . ,type)
+      ("line_deletions" . ,line_deletions)
       ("is_write" . ,is-write)
       ("project" . ,project)
       ("project_root_count" . ,project-root-count)
+      ("line_additions" . ,line_additions)
       ("operating_system" . ,os)
       ("lineno" . ,lineno)
       ("branch" . ,branch)
@@ -113,9 +116,12 @@
       ("user_agent" . ,user-agent))))
 
 (defun hackatime-add-heartbeat ()
-  (let ((hb (hackatime-create-heartbeat)))
-    (push hb hackatime-heartbeats)
-    (hackatime-save-heartbeats)))
+  "Add a heartbeat for the current buffer if it has a file."
+  (when (buffer-file-name) 
+    (hackatime-message "Adding heartbeat for file: %s" (buffer-file-name))
+    (let ((hb (hackatime-create-heartbeat)))
+      (push hb hackatime-heartbeats)
+      (hackatime-save-heartbeats))))
 
 (defun hackatime-flush ()
   (when hackatime-heartbeats
@@ -166,6 +172,10 @@
 (if (and hackatime-api-key (not (string-empty-p hackatime-api-key)))
     (progn
       (hackatime-message "API key detected, auto-starting tracking...")
+      (let ((cache-dir (expand-file-name "emacs-hackatime-cache" "~")))
+        (unless (file-exists-p cache-dir)
+          (make-directory cache-dir t)
+          (hackatime-message "Created cache directory: %s" cache-dir)))
       (hackatime-load-heartbeats)
       (hackatime-start-tracking))
   (message "API key missing! Please set `hackatime-api-key` to enable tracking."))

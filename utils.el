@@ -77,7 +77,9 @@
 (defun hackatime-get-project ()
   (if-let ((root (vc-root-dir)))
       (file-name-nondirectory (directory-file-name root))
-    "unknown"))
+    (if-let ((file (buffer-file-name)))
+        (file-name-nondirectory (directory-file-name (file-name-directory file)))
+      "unknown")))
 
 (defun hackatime-get-project-root-count ()
   (if-let ((root (vc-root-dir)))

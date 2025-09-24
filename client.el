@@ -12,7 +12,7 @@
 (defgroup hackatime nil
   "Customization group for HackaTime tracking in Emacs.")
 
-(defcustom hackatime-debug-mode t  ; Changed to t for debugging
+(defcustom hackatime-debug-mode t  
   "Display debug messages for HackaTime tracking."
   :type 'boolean
   :group 'hackatime)
@@ -74,7 +74,7 @@
 
 (defun hackatime-create-heartbeat ()
   (let* ((lines (hackatime-get-lines))
-        (line-changes (hackatime-save-current-state))  ; This also creates the cache
+        (line-changes (hackatime-save-current-state))  
         (cursor (hackatime-get-cursor-pos))
         (machine-id (hackatime-get-machine-id))
         (timestamp (hackatime-get-time))
